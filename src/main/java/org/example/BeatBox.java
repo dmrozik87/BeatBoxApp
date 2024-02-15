@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BeatBox {
+    private JFrame frame;
     private List<JCheckBox> checkBoxList;
     private Sequencer sequencer;
     private Sequence sequence;
@@ -39,7 +40,7 @@ public class BeatBox {
     }
 
     private void buildGUI() {
-        JFrame frame = new JFrame("BeatBoxApp");
+        frame = new JFrame("BeatBoxApp");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         BorderLayout layout = new BorderLayout();
         JPanel background = new JPanel(layout);
@@ -103,11 +104,11 @@ public class BeatBox {
         buttonBox.add(clear);
 
         JButton save = new JButton("Save Beat");
-        save.addActionListener(e -> writeFile());
+        save.addActionListener(e -> save());
         buttonBox.add(save);
 
-        JButton restore = new JButton("Restore Beat");
-        restore.addActionListener(e -> readFile());
+        JButton restore = new JButton("Load Beat");
+        restore.addActionListener(e -> open());
         buttonBox.add(restore);
 
         return buttonBox;
@@ -195,24 +196,36 @@ public class BeatBox {
         return event;
     }
 
-    private void writeFile() {
+    private void save() {
+        JFileChooser saveFile = new JFileChooser(".");
+        saveFile.showSaveDialog(frame);
+        writeFile(saveFile.getSelectedFile());
+    }
+
+    private void writeFile(File file) {
         boolean[] checkboxState = new boolean[256];
 
         for (int i = 0; i < checkBoxList.size(); i++) {
             checkboxState[i] = checkBoxList.get(i).isSelected();
         }
 
-        try (ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream("Checkbox.ser"))) {
+        try (ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(file))) {
             os.writeObject(checkboxState);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void readFile() {
+    private void open() {
+        JFileChooser fileOpen = new JFileChooser(".");
+        fileOpen.showOpenDialog(frame);
+        readFile(fileOpen.getSelectedFile());
+    }
+
+    private void readFile(File file) {
         boolean[] checkboxState = null;
 
-        try (ObjectInputStream is = new ObjectInputStream(new FileInputStream("Checkbox.ser"))) {
+        try (ObjectInputStream is = new ObjectInputStream(new FileInputStream(file))) {
             checkboxState = (boolean[]) is.readObject();
         } catch (Exception e) {
             e.printStackTrace();
